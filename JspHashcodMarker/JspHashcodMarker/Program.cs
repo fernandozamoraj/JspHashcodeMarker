@@ -50,20 +50,31 @@ namespace JspHashcodMarker
                 Console.WriteLine(e.ToString());
             }
 
-            Console.WriteLine("Process Complete" + (hasErrors ? " with errors" : ""));
+            Console.WriteLine();
+            Console.WriteLine("Process Complete" + (hasErrors ? " with errors." : "."));
+            Console.WriteLine();
+            Console.WriteLine("Press the Enter key to exit the program.");
             Console.Read();
         }
 
         static void ReportCollisions()
         {
+            int collisionCount = 0;
+
             Console.WriteLine("*************Reporting Hashcode Collisions**************");
             foreach (var hashCode in _hashCodes)
             {
                 if (hashCode.Value > 1)
                 {
+                    collisionCount++;
                     Console.WriteLine(hashCode.Key + ": " + hashCode.Value.ToString().PadLeft(5));
                 }
             }
+
+            Console.WriteLine(collisionCount + " collisions detected.");
+            Console.WriteLine();
+            Console.WriteLine("*************End of Collision Report**************");
+
         }
         static void MarkJsps(string rootPath)
         {
