@@ -8,6 +8,7 @@ namespace JspHashcodMarker
 {
     public class FileNameToHashcode
     {
+        //Taken from google search
         public string SHA1(string data)
         {
             byte[] hash = new SHA1CryptoServiceProvider().ComputeHash(

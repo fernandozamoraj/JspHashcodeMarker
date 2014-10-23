@@ -15,7 +15,7 @@ namespace JspHashcodMarker
             FileTreeWalker walker = new FileTreeWalker();
             List<FileInfo> files = new List<FileInfo>();
 
-            walker.FileFound = (x) =>
+            walker.OnFileFound = (x) =>
             {
                 files.Add(x);
                 if (OnProgress != null)

@@ -8,19 +8,18 @@ namespace JspHashcodMarker
 {
     public class FileTreeWalker
     {
-        public Action<FileInfo> FileFound{get;set;}  
+        public Action<FileInfo> OnFileFound{get;set;}  
 
         public void Walk(string rootPath, string searchPattern)
         {
             DirectoryInfo directoryInfo = new DirectoryInfo(rootPath);
-
             DirectoryInfo[] directories = directoryInfo.GetDirectories();
-
             FileInfo[] files = directoryInfo.GetFiles(searchPattern);
 
             foreach (FileInfo fileInfo in files)
             {
-                FileFound(fileInfo);
+                if( OnFileFound != null) 
+                    OnFileFound(fileInfo);
             }
 
             foreach (DirectoryInfo childDirectory in directories)
