@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 
 namespace JspHashcodMarker
 {
-    public class FileNameToHashcode
+    public class SHAConverter
     {
         //Taken from google search
         public string SHA1(string data)

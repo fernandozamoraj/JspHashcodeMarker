@@ -5,6 +5,7 @@ using System.Text;
 
 /*
  *  Author: Fernando Zamora
+ *  Date: 10/24/2014
  *  Description: This program assigns a file ID to each of our JSP files. 
  *  This is so that we can identify each file with the corresponding file 
  *  in the source code. I considered using filenames with paths but decided
@@ -32,7 +33,7 @@ namespace JspHashcodMarker
     class Program
     {
         static Dictionary<string, int> _hashCodes = new Dictionary<string, int>();
-        public static string RootFolder = "C:\\dev\\spring\\dev\\workspace\\pbuse\\WebContent\\";
+        public static string RootFolder = "C:\\dev\\spring\\dev\\workspace\\pbuse\\";
 
         static void Main(string[] args)
         {
@@ -40,9 +41,12 @@ namespace JspHashcodMarker
 
             try 
             {
+                CollisionDetector collisionDetector = new CollisionDetector();
+                collisionDetector.ScanForCollisions(RootFolder);
+
                 //Change this path to your local path
-                MarkJsps(RootFolder);
-                ReportCollisions();
+                MarkJsps(RootFolder, collisionDetector);
+                ReportCollisions(collisionDetector);
             }
             catch (Exception e)
             {
@@ -57,18 +61,16 @@ namespace JspHashcodMarker
             Console.Read();
         }
 
-        static void ReportCollisions()
+        static void ReportCollisions(CollisionDetector collisionDetector)
         {
             int collisionCount = 0;
 
             Console.WriteLine("*************Reporting Hashcode Collisions**************");
-            foreach (var hashCode in _hashCodes)
+            foreach (var hashCode in collisionDetector.Collisions)
             {
-                if (hashCode.Value > 1)
-                {
+
                     collisionCount++;
-                    Console.WriteLine(hashCode.Key + ": " + hashCode.Value.ToString().PadLeft(5));
-                }
+                    Console.WriteLine(hashCode.Key + ": " + hashCode.Value.Count.ToString().PadLeft(5));
             }
 
             Console.WriteLine(collisionCount + " collisions detected.");
@@ -76,10 +78,10 @@ namespace JspHashcodMarker
             Console.WriteLine("*************End of Collision Report**************");
 
         }
-        static void MarkJsps(string rootPath)
+        static void MarkJsps(string rootPath, CollisionDetector collisionDetector)
         {
             FileRepo fileRepo = new FileRepo();
-            FileMarker marker = new FileMarker();
+            FileMarker marker = new FileMarker(collisionDetector);
 
             System.Console.WriteLine("Scanning Directory......");
 

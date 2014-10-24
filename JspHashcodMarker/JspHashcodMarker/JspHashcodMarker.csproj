@@ -45,8 +45,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CollisionDetector.cs" />
     <Compile Include="FileMarker.cs" />
-    <Compile Include="FileNameToHashcode.cs" />
+    <Compile Include="SHAConverter.cs" />
     <Compile Include="FileRepo.cs" />
     <Compile Include="FileTreeWalker.cs" />
     <Compile Include="Program.cs" />

@@ -7,15 +7,18 @@ using System.IO;
 namespace JspHashcodMarker
 {
     public class FileMarker
-    {
-
+    {       
         //This marker is the heading label to help us identify if the file has been marked
         private readonly string FILE_ID_MARKER = "<!-- File ID: ";
-
-        FileNameToHashcode _fileNameToHashcode = new FileNameToHashcode();
-        static Dictionary<string, int> _hashcodeDictionary = new Dictionary<string, int>();
-
+        SHAConverter _fileNameToHashcodeConverter = new SHAConverter();
+        CollisionDetector _collisionDetector;
+        
         public Action<string, string> onNewHashcode { get; set; }
+
+        public FileMarker(CollisionDetector collisionDetector)
+        {
+            _collisionDetector = collisionDetector;
+        }
 
         public bool Mark(FileInfo file)
         {
@@ -55,13 +58,15 @@ namespace JspHashcodMarker
                         //the hash only uses gcss\jsp\myproject\myfile.jsp
                         //in this manner the hash computations will be the exact same no matter who does it on their 
                         //box even if they have the project in a different path than mine.
-                        string fileId = CreateFileId(file.FullName.Replace(JspHashcodMarker.Program.RootFolder, "\\"));
+                        //string fileId = CreateFileId(file.FullName.Replace(JspHashcodMarker.Program.RootFolder, "\\"));
+                        string fileId = CreateFileId(file.Name);
 
                         //To avoid having IDs with the same hash... Just in case of a collision
                         //The last five numbers
-                        string sequenceNumber = GetFileIdSequenceNumer(fileId).ToString().PadLeft(5, '0');
+                        string sequenceNumber = GetFileIdSequenceNumber(fileId, file.FullName).ToString().PadLeft(5, '0');
+                        string sequenceTotal = GetNumberOfTotalCollisions(fileId).ToString().PadLeft(5, '0');
 
-                        writer.WriteLine(FILE_ID_MARKER + fileId + "-" + sequenceNumber + " Date Marked: " +
+                        writer.WriteLine(FILE_ID_MARKER + fileId + "-" + sequenceNumber + "of" + sequenceTotal + " Date Marked: " +
                                          dtNow.ToString("MMMM dd, yyyy ") + " -->");
                         hasBeenMarked = true;
                     }
@@ -72,27 +77,50 @@ namespace JspHashcodMarker
 
             return true;
         }
+        
 
-        //sequence number is an additional salt to 
-        private int GetFileIdSequenceNumer(string fileId)
+        /*
+         * Figures out the sequence by matchin the full file path to the sequence in the list 
+         * e.g.
+         * abg4b34b34b3343b3eb334b has a list of 3 files
+         *                          c:\temp\myfile1.jsp             has a position of 1
+         *                          c:\temp\sub\myfile1.jsp         has a position of 2
+         *                          c:\temp\sub2\myfile1.jsp        has a position of 3 
+         * 
+         * each of those files would have a sequence equal to their position 
+         * 
+         *          
+         */
+        int GetFileIdSequenceNumber(string fileId, string fullName){
+
+            if(_collisionDetector.Collisions.ContainsKey(fileId)){
+                List<string> fileNames = _collisionDetector.Collisions[fileId];
+
+                for(int i = 0; i < fileNames.Count; i++)
+                {
+                    if(fileNames[i].CompareTo(fullName) == 0)
+                    {
+                        return i+1; //add 1 to avoid using 0 as a sequence
+                    }
+                }
+            }
+
+            return 1;
+        }
+
+        int GetNumberOfTotalCollisions(string fileId)
         {
-            int sequenceId = 1;
-
-            if (_hashcodeDictionary.ContainsKey(fileId))
+            if (_collisionDetector.Collisions.ContainsKey(fileId))
             {
-                sequenceId = _hashcodeDictionary[fileId] = _hashcodeDictionary[fileId] + 1;
-            }
-            else
-            {
-                _hashcodeDictionary.Add(fileId, sequenceId);
+                return _collisionDetector.Collisions[fileId].Count;
             }
 
-            return sequenceId;
+            return 1;
         }
 
         private string CreateFileId(string value)
         {
-            string fileId = _fileNameToHashcode.SHA1(value);
+            string fileId = _fileNameToHashcodeConverter.SHA1(value);
 
             if (onNewHashcode != null)
                 onNewHashcode(fileId, value);
